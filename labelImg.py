@@ -7,6 +7,7 @@ import platform
 import re
 import sys
 import subprocess
+import os
 
 from functools import partial
 from collections import defaultdict
@@ -988,9 +989,14 @@ class MainWindow(QMainWindow, WindowMixin):
                                       % (e, unicodeFilePath))
                     self.status("Error reading %s" % unicodeFilePath)
                     return False
-                self.imageData = self.labelFile.imageData
-                self.lineColor = QColor(*self.labelFile.lineColor)
-                self.fillColor = QColor(*self.labelFile.fillColor)
+                dirnamee = os.path.dirname(unicodeFilePath)
+                imgnamee = os.path.basename(unicodeFilePath)[:-4]+'.jpg'
+                imgnamee = os.path.join(dirnamee, imgnamee)
+                print(imgnamee)
+                self.imageData = read(imgnamee)
+                # self.imageData = self.labelFile.imageData
+                # self.lineColor = QColor(*self.labelFile.lineColor)
+                # self.fillColor = QColor(*self.labelFile.fillColor)
                 self.canvas.verified = self.labelFile.verified
             else:
                 # Load image:
@@ -1132,7 +1138,14 @@ class MainWindow(QMainWindow, WindowMixin):
                     relativePath = os.path.join(root, file)
                     path = ustr(os.path.abspath(relativePath))
                     images.append(path)
-        images.sort(key=lambda x: x.lower())
+        #images.sort(key=lambda x: x.lower())
+
+        def natural_sort(l):
+            convert = lambda text: int(text) if text.isdigit() else text.lower()
+            alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
+            return sorted(l, key = alphanum_key)
+        images = natural_sort(images)
+
         return images
 
     def changeSavedirDialog(self, _value=False):
